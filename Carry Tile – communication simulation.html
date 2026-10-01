@@ -1,0 +1,96 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Carry Tile – communication simulation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700&display=swap">
+<style>
+:root{--ink:#14233a;--mute:#5a6b82;--card:#fff;--line:rgba(20,35,58,.18);--bg1:#eef5fc;--bg2:#c9dbee;--r:#c27a00;--b:#3e6fc0;--p:#d4472f;--m:#0c8f80;--c:#7a55cc;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e6eefb;--mute:#9fb0c8;--card:#1c2c45;--line:rgba(255,255,255,.2);--bg1:#17263c;--bg2:#0b1422;--r:#f0b23a;--b:#7aa6f0;--p:#ff7a62;--m:#2ee0c8;--c:#b196ff}}
+:root[data-theme="dark"]{--ink:#e6eefb;--mute:#9fb0c8;--card:#1c2c45;--line:rgba(255,255,255,.2);--bg1:#17263c;--bg2:#0b1422;--r:#f0b23a;--b:#7aa6f0;--p:#ff7a62;--m:#2ee0c8;--c:#b196ff}
+html,body{min-height:100%;margin:0}
+body{font:14px/1.45 "Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);background:radial-gradient(120% 90% at 50% 0,var(--bg1),var(--bg2)) fixed}
+main{max-width:1280px;margin:0 auto;padding:16px;display:grid;gap:14px;grid-template-columns:minmax(0,1fr) 340px}
+h1{margin:0;font-size:26px;letter-spacing:-.02em}.sub{margin:2px 0 0;color:var(--mute)}
+.top{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:12px;align-items:end;justify-content:space-between}
+.tabs,.ctl{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+button,select{font:600 13px "Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer}
+button.on{background:var(--ink);color:var(--bg1);border-color:var(--ink)}button:focus-visible,select:focus-visible{outline:2px solid var(--m);outline-offset:2px}
+.stage{background:color-mix(in srgb,var(--card) 70%,transparent);border:1px solid var(--line);border-radius:16px;padding:10px}
+#cap{margin:4px 8px 0;min-height:44px}#cap b{display:block;font-size:15px}#cap span{color:var(--mute)}
+svg{width:100%;height:auto;display:block}
+.nd rect{fill:var(--card);stroke:var(--line);stroke-width:1.5;transition:.25s}.nd.on rect{stroke:var(--m);stroke-width:3}
+.nd text{fill:var(--ink);text-anchor:middle;font:600 13px "Bricolage Grotesque",system-ui,sans-serif}.nd .s{font-weight:400;font-size:11px;fill:var(--mute)}
+.ed{fill:none;stroke-width:2;stroke-dasharray:5 5;opacity:.55;transition:.25s}.ed.on{stroke-width:4;opacity:1;stroke-dasharray:none}
+.lb{font:600 11px "Bricolage Grotesque",system-ui,sans-serif;text-anchor:middle;paint-order:stroke;stroke:var(--bg1);stroke-width:4px}
+.box{fill:none;stroke:var(--mute);stroke-dasharray:6 6;stroke-width:1.5}.cl{font:700 12px "Bricolage Grotesque",system-ui,sans-serif;fill:var(--mute)}
+#pk circle{stroke:var(--card);stroke-width:2}#pk text{font:700 11px "Bricolage Grotesque",system-ui,sans-serif;text-anchor:middle;paint-order:stroke;stroke:var(--bg1);stroke-width:4px;fill:var(--ink)}
+.leg{display:flex;gap:14px;flex-wrap:wrap;margin:6px 8px 2px;color:var(--mute);font-size:12px}.leg i{display:inline-block;width:18px;height:4px;border-radius:2px;margin-right:5px;vertical-align:middle}
+aside{background:color-mix(in srgb,var(--card) 70%,transparent);border:1px solid var(--line);border-radius:16px;padding:12px;max-height:80vh;overflow:auto}
+h2{margin:0 0 8px;font-size:14px}#log{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+#log li{border-left:4px solid var(--m);padding:2px 0 2px 10px}#log b{display:block;font-size:13px}#log small{color:var(--mute)}
+#log pre{margin:4px 0 0;padding:6px 8px;border-radius:8px;background:color-mix(in srgb,var(--ink) 8%,transparent);font:11.5px/1.4 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-all}
+.empty{color:var(--mute)}
+@media(max-width:900px){main{grid-template-columns:1fr}aside{max-height:none}}
+@media(prefers-reduced-motion:reduce){.nd rect,.ed{transition:none}}
+</style></head><body><main>
+<div class="top"><div><h1>Carry Tile data flow</h1><p class="sub">Watch where each message travels, and over which link, from tag to phone.</p></div>
+<div class="tabs" id="tabs" role="tablist"></div></div>
+<section class="stage"><div id="cap"></div>
+<svg id="sv" viewBox="0 0 1000 540" role="img" aria-label="Communication diagram of the Carry Tile, cloud and phone"></svg>
+<div class="leg"><span><i style="background:var(--r)"></i>Short-range RFID</span><span><i style="background:var(--b)"></i>On-board wiring</span><span><i style="background:var(--p)"></i>Power</span><span><i style="background:var(--m)"></i>Wi-Fi and MQTT</span><span><i style="background:var(--c)"></i>Cloud services</span></div>
+<div class="ctl" style="margin:8px"><button id="play" class="on">Play</button><button id="step">Next step</button><button id="rst">Restart</button><label>Speed <select id="spd"><option value=".6">Slow</option><option value="1" selected>Normal</option><option value="2">Fast</option></select></label></div></section>
+<aside><h2>Message log</h2><ul id="log"><li class="empty" style="border:0">Press Play to send the first message.</li></ul></aside></main>
+<script>
+const $=s=>document.querySelector(s),NS='http://www.w3.org/2000/svg',sv=$('#sv'),V=v=>`var(--${v})`;
+const N={tag:[70,80,'Tagged item','MIFARE tag, no battery'],rfid:[270,80,'MFRC522','RFID reader'],sat:[70,290,'Satellites','GNSS signals'],gps:[270,290,'NEO-M8N','GPS module'],esp:[450,190,'ESP32-WROOM-32','Main controller',160,80],led:[370,440,'Buzzer + LED','Local alerts'],pwr:[540,440,'Li-Po + TP4056','Battery and 3.3 V'],ap:[700,190,'Wi-Fi router','2.4 GHz access point'],brk:[850,190,'MQTT broker','Cloud'],db:[850,60,'Inventory DB','Cloud rules engine'],phone:[850,370,'Companion app','Phone']};
+const E={e1:['tag','rfid','13.56 MHz, ISO 14443A','r',0,-10],e2:['rfid','esp','SPI','b',-20,-6],e3:['sat','gps','L1 1575 MHz','b',0,-10],e4:['gps','esp','UART 9600 baud','b',-30,12],e5:['esp','led','GPIO 25/26','b',-34,0],e6:['pwr','esp','3.3 V rail','p',34,0],e7:['esp','ap','Wi-Fi','m',0,-10],e8:['ap','brk','Internet, TLS 8883','m',0,-10],e9:['brk','db','Rules + storage','c',-52,0],e10:['brk','phone','MQTT or push','m',-48,0]};
+sv.innerHTML=`<rect class="box" x="160" y="14" width="460" height="498" rx="30"/><text class="cl" x="178" y="38">Carry Tile (inside the enclosure)</text><text class="cl" x="742" y="310" text-anchor="middle"></text>`;
+Object.entries(E).forEach(([k,[a,b,t,l,dx,dy]])=>{const A=N[a],B=N[b],p=document.createElementNS(NS,'path');p.id=k;p.setAttribute('d',`M${A[0]} ${A[1]}L${B[0]} ${B[1]}`);p.setAttribute('class','ed');p.style.stroke=V(l);sv.appendChild(p);
+ const x=document.createElementNS(NS,'text');x.setAttribute('class','lb');x.setAttribute('x',(A[0]+B[0])/2+dx);x.setAttribute('y',(A[1]+B[1])/2+dy+4);x.style.fill=V(l);x.textContent=t;sv.appendChild(x)});
+Object.entries(N).forEach(([k,[x,y,t,s,w=130,h=54]])=>{const g=document.createElementNS(NS,'g');g.id='n-'+k;g.setAttribute('class','nd');g.innerHTML=`<rect x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" rx="12"/><text x="${x}" y="${y-2}">${t}</text><text class="s" x="${x}" y="${y+14}">${s}</text>`;sv.appendChild(g)});
+sv.insertAdjacentHTML('beforeend','<g id="pk" style="display:none"><circle r="8"/><text y="-14"></text></g>');
+const SC={
+check:{n:'Check-in',d:'A tagged item is read, stamped with the user\'s position and logged to the cloud.',s:[
+ {e:'e1',t:'Reader powers the tag',p:'REQA, anti-collision, SELECT\nTag answers: UID 04:7B:C9:E1',l:'UID',x:'RFID'},
+ {e:'e2',r:1,t:'Reader hands the UID to the ESP32',p:'SPI mode 0, 4 MHz\nMFRC522 FIFO -> ESP32: 04 7B C9 E1',l:'4 B',x:'SPI'},
+ {e:'e4',r:1,t:'GPS gives the current position',p:'$GNGGA,102215.00,1254.60,N,07730.01,E,1,09,1.1*5A\n~72 bytes, 1 Hz',l:'NMEA',x:'UART'},
+ {n:'esp',t:'ESP32 matches and stamps the read',p:'UID 04:7B:C9:E1 -> "Keys"\nlast_seen = {fix, time 10:42:15}\nsaved in RAM and flash (NVS)',x:'Firmware'},
+ {e:'e7',t:'MQTT PUBLISH over Wi-Fi',p:'topic: carry/tile01/inventory (QoS 1)\n{"uid":"04:7B:C9:E1","item":"Keys","lat":12.9101,"lon":77.5002,"ts":1760000535}\n~110 bytes',l:'PUBLISH',x:'MQTT'},
+ {e:'e8',t:'Broker receives it over TLS',p:'Router -> Internet -> broker, port 8883\nBroker replies PUBACK to the tile',l:'TLS',x:'MQTT'},
+ {e:'e9',t:'Cloud stores the inventory record',p:'UPSERT items SET last_seen_lat, last_seen_lon, ts\nWHERE tile=tile01 AND uid=04:7B:C9:E1',l:'record',x:'Cloud'},
+ {e:'e10',t:'App refreshes the essentials list',p:'carry/tile01/inventory -> app\n"Keys: checked in, 10:42"',l:'update',x:'App'}]},
+sync:{n:'Schedule sync',d:'The app sends today\'s timetable. The tile learns which essentials to expect.',s:[
+ {e:'e10',r:1,t:'App publishes the essentials list',p:'topic: carry/tile01/schedule (retained, QoS 1)\n{"next":"Physics Lab 11:00","need":["ID card","Keys","Charger"]}',l:'PUBLISH',x:'App'},
+ {e:'e9',t:'Cloud stores the list for next time',p:'Retained message kept on the broker\nIf the tile is asleep it still gets it when it reconnects',l:'retain',x:'Cloud'},
+ {e:'e8',r:1,t:'Broker pushes to the subscribed tile',p:'Tile subscribed to carry/tile01/#\nBroker -> router, TLS 8883',l:'TLS',x:'MQTT'},
+ {e:'e7',r:1,t:'Tile receives it over Wi-Fi',p:'SUBSCRIBE delivery, ~80 bytes',l:'DELIVER',x:'MQTT'},
+ {n:'esp',t:'ESP32 updates its expected list',p:'expected = [ID card, Keys, Charger]\nsaved in NVS so it works offline',x:'Firmware'},
+ {e:'e5',t:'LED blinks to confirm',p:'GPIO 26 high for 200 ms (cyan blink)',l:'blink',x:'GPIO'}]},
+miss:{n:'Missing-item alert',d:'You walk away from the keys. The tile alerts you locally and tells the phone.',s:[
+ {e:'e3',t:'Satellites keep the fix fresh',p:'GNSS signals reach the patch antenna\nPosition updates every second',l:'L1',x:'GNSS'},
+ {e:'e4',r:1,t:'GPS sends the new position',p:'$GNGGA,102955.00,1254.61,N,07730.02,E,1,09,1.0*5C',l:'NMEA',x:'UART'},
+ {n:'esp',t:'ESP32 compares user and item positions',p:'distance(user, Keys.last_seen) = 12.4 m\nthreshold 10 m, no tag read since 10:42\n-> MISSING',x:'Firmware'},
+ {e:'e5',t:'Buzzer and LED alert you right away',p:'GPIO 25: 2.3 kHz beeps x3\nGPIO 26: red blink',l:'ALERT',x:'GPIO'},
+ {e:'e7',t:'Alert published over Wi-Fi',p:'topic: carry/tile01/alert (QoS 1)\n{"item":"Keys","dist_m":12.4,"last_seen":"Hostel Room 214"}',l:'PUBLISH',x:'MQTT'},
+ {e:'e8',t:'Broker receives the alert',p:'TLS 8883, PUBACK returned',l:'TLS',x:'MQTT'},
+ {e:'e9',t:'Rules engine logs it and builds a message',p:'RULE alert.missing -> insert event\nresolve place name from last_seen',l:'rule',x:'Cloud'},
+ {e:'e10',t:'Phone gets the notification',p:'Push: "Keys left behind"\n"Hostel Room 214, 12 m back. Last seen 10:42."',l:'PUSH',x:'App'}]},
+pow:{n:'Battery report',d:'The tile reports battery and GPS health, then sleeps to save power.',s:[
+ {e:'e6',r:1,t:'ESP32 samples the battery',p:'ADC reads a divider on the Li-Po line\n3.82 V -> about 68%\nTP4056 status: not charging',l:'3.82 V',x:'Power'},
+ {n:'esp',t:'ESP32 builds a status report',p:'Wi-Fi RSSI -61 dBm, GPS 9 sats\nThen light sleep between reads',x:'Firmware'},
+ {e:'e7',t:'Status published every 5 minutes',p:'topic: carry/tile01/status (QoS 0)\n{"batt":68,"rssi":-61,"sats":9}\n~45 bytes',l:'PUBLISH',x:'MQTT'},
+ {e:'e8',t:'Broker receives it',p:'TLS 8883, no acknowledgment needed at QoS 0',l:'TLS',x:'MQTT'},
+ {e:'e9',t:'Cloud keeps the history',p:'INSERT INTO tile_status (tile, batt, rssi, sats, ts)\nApp can warn at 15% battery',l:'record',x:'Cloud'}]}};
+const LC={RFID:'r',SPI:'b',UART:'b',GPIO:'b',GNSS:'b',Power:'p',MQTT:'m',App:'m',Firmware:'m',Cloud:'c'};
+let cur='check',i=0,playing=false,busy=false,gen=0;const sp=()=>+$('#spd').value,sl=ms=>new Promise(r=>setTimeout(r,ms/sp()));
+const tabs=$('#tabs');Object.entries(SC).forEach(([k,v])=>{const b=document.createElement('button');b.textContent=v.n;b.dataset.k=k;b.onclick=()=>{cur=k;reset()};tabs.appendChild(b)});
+function clr(){document.querySelectorAll('.on').forEach(e=>{if(!e.dataset.k&&e.id!=='play')e.classList.remove('on')});$('#pk').style.display='none'}
+function reset(){gen++;playing=false;busy=false;i=0;clr();[...tabs.children].forEach(b=>b.classList.toggle('on',b.dataset.k===cur));$('#log').innerHTML='<li class="empty" style="border:0">Press Play to send the first message.</li>';$('#cap').innerHTML=`<b>${SC[cur].n}</b><span>${SC[cur].d}</span>`;$('#play').textContent='Play'}
+function fly(s,g){return new Promise(res=>{const p=document.getElementById(s.e),L=p.getTotalLength(),pk=$('#pk'),c=pk.querySelector('circle');c.style.fill=V(E[s.e][3]);pk.querySelector('text').textContent=s.l||'';pk.style.display='';const d=1500/sp();let t0;
+ (function f(t){if(g!==gen)return res();t0=t0||t;let u=Math.min(1,(t-t0)/d);const q=p.getPointAtLength((s.r?1-u:u)*L);pk.setAttribute('transform',`translate(${q.x} ${q.y})`);u<1?requestAnimationFrame(f):res()})(performance.now())})}
+async function step(){if(busy||i>=SC[cur].s.length)return;busy=true;const g=gen,s=SC[cur].s[i];clr();
+ const nodes=s.e?E[s.e].slice(0,2):[s.n];nodes.forEach(n=>$('#n-'+n).classList.add('on'));if(s.e)$('#'+s.e).classList.add('on');
+ $('#cap').innerHTML=`<b>Step ${i+1} of ${SC[cur].s.length}: ${s.t}</b><span>${s.e?E[s.e][2]:'Processing inside the device'}</span>`;
+ const lg=$('#log');if(lg.querySelector('.empty'))lg.innerHTML='';const li=document.createElement('li');li.style.borderColor=V(LC[s.x]||'m');li.innerHTML=`<b>${s.t}</b><small>${s.x}${s.e?' · '+E[s.e][2]:''}</small><pre></pre>`;li.querySelector('pre').textContent=s.p;lg.prepend(li);
+ if(s.e)await fly(s,g);else await sl(1400);await sl(500);if(g!==gen)return;i++;busy=false;if(i>=SC[cur].s.length){clr();playing=false;$('#play').textContent='Replay';$('#cap').innerHTML+=' <span>Sequence complete.</span>'}}
+async function play(){if(i>=SC[cur].s.length)reset();if(playing){playing=false;$('#play').textContent='Play';return}playing=true;$('#play').textContent='Pause';const g=gen;while(playing&&g===gen&&i<SC[cur].s.length)await step()}
+$('#play').onclick=play;$('#step').onclick=()=>{playing=false;$('#play').textContent='Play';if(i>=SC[cur].s.length)reset();step()};$('#rst').onclick=reset;reset();
+</script></body></html>
