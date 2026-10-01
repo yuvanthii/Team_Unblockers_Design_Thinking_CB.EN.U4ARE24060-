@@ -38,4 +38,4 @@ Visually communicate the relationship between the main device and the RFID-tagge
 
 Show a practical arrangement of the GPS, RFID reader, controller, battery and alert components within the enclosure while maintaining a compact external appearance.
 
-The final virtual prototype should represent a smart essentials-management and tracking system designed to reduce the likelihood of users forgetting or misplacing their important belongings, generate a simulation 3d model for the given product
+The final virtual prototype should represent a smart essentials-management and tracking system designed to reduce the likelihood of users forgetting or misplacing their important belongings, generate a simulation 3d model for the given product, along with the simulation of communication between different nodes present. 
