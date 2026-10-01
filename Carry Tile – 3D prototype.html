@@ -1,0 +1,130 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Carry Tile – 3D prototype</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700&display=swap">
+<style>
+:root{--ink:#14233a;--mute:#5a6b82;--panel:rgba(255,255,255,.74);--line:rgba(20,35,58,.14);--teal:#0f9d8c;--coral:#e5533d;--s1:#eef5fc;--s2:#c9dbee;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e6eefb;--mute:#9fb0c8;--panel:rgba(16,28,46,.74);--line:rgba(255,255,255,.15);--s1:#17263c;--s2:#0b1422;--teal:#2ee0c8}}
+:root[data-theme="dark"]{--ink:#e6eefb;--mute:#9fb0c8;--panel:rgba(16,28,46,.74);--line:rgba(255,255,255,.15);--s1:#17263c;--s2:#0b1422;--teal:#2ee0c8}
+html,body{height:100%;margin:0}
+body{font:14px/1.4 "Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);background:radial-gradient(120% 90% at 50% 20%,var(--s1),var(--s2));overflow:hidden}
+#app{position:relative;height:100%}#gl{position:absolute;inset:0}#gl canvas{display:block}
+header,aside,#bar,#toast{position:absolute;z-index:2}
+header{left:18px;top:14px;max-width:300px}
+h1{margin:0;font-size:26px;letter-spacing:-.02em}header p{margin:2px 0 0;color:var(--mute);font-size:13px}
+aside{background:var(--panel);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:14px;padding:12px}
+h2{margin:0 0 8px;font-size:13px;font-weight:700}
+#parts{left:18px;top:104px;width:250px}#side{right:18px;top:14px;width:290px}
+#plist button{display:block;width:100%;text-align:left;background:none;border:0;border-left:3px solid transparent;padding:6px 8px;margin:0;color:inherit;font:inherit;cursor:pointer;border-radius:0 8px 8px 0}
+#plist button:hover{background:var(--line)}#plist button.on{border-color:var(--teal);background:var(--line)}
+#plist b{display:block;font-weight:600}#plist span{display:none;color:var(--mute);font-size:12px}#plist .on span{display:block}
+.spec{margin:8px 0 0;color:var(--mute);font-size:12px}
+ul{list-style:none;margin:0 0 12px;padding:0}#ess li{display:grid;grid-template-columns:12px 1fr;gap:2px 8px;padding:5px 0;border-bottom:1px solid var(--line)}
+.dot{width:10px;height:10px;border-radius:50%;background:#8a97a8;margin-top:4px}.ok .dot{background:var(--teal)}.miss .dot{background:var(--coral);animation:bl .6s infinite alternate}
+#ess small{grid-column:2;color:var(--mute)}.miss small{color:var(--coral)}
+#log li{font-size:11.5px;color:var(--mute);padding:2px 0;font-variant-numeric:tabular-nums}#log em{font-style:normal;color:var(--teal);font-weight:600}
+#bar{left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;background:var(--panel);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:16px;padding:8px 12px;max-width:calc(100% - 24px)}
+#bar label{display:flex;align-items:center;gap:6px;color:var(--mute);font-size:13px}
+button.b{font:600 13px inherit;font-family:inherit;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;padding:8px 12px;cursor:pointer}
+button.b.p{background:var(--ink);color:var(--s1);border-color:var(--ink)}button.b:focus-visible,#plist button:focus-visible,input:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+#toast{right:18px;bottom:96px;width:280px;background:#1b2536;color:#fff;border-radius:16px;padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.3);display:grid;gap:3px;border-left:5px solid var(--coral)}
+#toast[hidden]{display:none}#toast span{font-size:12.5px;color:#c4cfdf}#toast button{justify-self:start;margin-top:6px;background:none;border:0;color:#7fe5d8;font:600 12px inherit;font-family:inherit;padding:0;cursor:pointer}
+@keyframes bl{to{opacity:.35}}
+@media(max-width:860px){#parts{top:auto;bottom:112px;left:8px;right:8px;width:auto;display:flex;gap:4px;overflow-x:auto;padding:6px}#parts h2,.spec,#plist span{display:none!important}#plist{display:flex}#plist button{white-space:nowrap;border-left:0;border-radius:8px}header{left:12px;max-width:62%}header p,#log,#side h2:last-of-type{display:none}#side{width:200px;right:8px;top:8px;padding:8px}#toast{right:8px;bottom:170px}}
+@media(prefers-reduced-motion:reduce){.miss .dot{animation:none}}
+</style></head><body><div id="app"><div id="gl"></div>
+<header><h1>Carry Tile</h1><p>Virtual prototype of a pocket tracker that watches your ID card, keys, earphones and charger.</p></header>
+<aside id="parts"><h2>Inside the tile</h2><div id="plist"></div><p class="spec">About 54 × 54 × 20 mm and 40 g (estimated). 500 mAh Li-Po, USB-C charging.</p></aside>
+<aside id="side"><h2>Today's essentials</h2><ul id="ess"></ul><h2>MQTT feed</h2><ul id="log"></ul></aside>
+<div id="toast" hidden role="alert"><b>Keys left behind</b><span id="tmsg"></span><button id="dis">Dismiss</button></div>
+<div id="bar"><label>Explode <input id="ex" type="range" min="0" max="1" step=".01" value="0"></label><label><input id="xr" type="checkbox"> See-through shell</label><label><input id="sp" type="checkbox"> Spin</label>
+<button class="b p" id="b1">Check in belongings</button><button class="b p" id="b2">Walk to next class</button><button class="b" id="b3">Reset</button></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const T=THREE,$=s=>document.querySelector(s),app=$('#app');
+const R=new T.WebGLRenderer({antialias:true,alpha:true});R.setPixelRatio(Math.min(devicePixelRatio,2));R.shadowMap.enabled=true;R.shadowMap.type=T.PCFSoftShadowMap;$('#gl').appendChild(R.domElement);
+const S=new T.Scene(),C=new T.PerspectiveCamera(32,1,1,3000);C.position.set(150,150,230);
+const O=new T.OrbitControls(C,R.domElement);O.enableDamping=true;O.target.set(0,8,40);O.maxPolarAngle=1.52;
+S.add(new T.HemisphereLight(0xffffff,0x8fa6c2,.95));
+const L=new T.DirectionalLight(0xffffff,.85);L.position.set(140,240,120);L.castShadow=true;L.shadow.mapSize.set(1024,1024);Object.assign(L.shadow.camera,{left:-500,right:500,top:500,bottom:-500,far:900});S.add(L);
+const gnd=new T.Mesh(new T.PlaneGeometry(2400,2400),new T.ShadowMaterial({opacity:.2}));gnd.rotation.x=-Math.PI/2;gnd.position.y=-.5;gnd.receiveShadow=true;S.add(gnd);
+const M=(c,o={})=>new T.MeshStandardMaterial(Object.assign({color:c,roughness:.5,metalness:.1},o));
+const bx=(w,h,d,m,x,y,z)=>{const o=new T.Mesh(new T.BoxGeometry(w,h,d),m);o.position.set(x,y,z);return o};
+const cy=(r,h,m,x,y,z)=>{const o=new T.Mesh(new T.CylinderGeometry(r,r,h,28),m);o.position.set(x,y,z);return o};
+function rr(w,h,r){const s=new T.Shape(),x=-w/2,y=-h/2,P=Math.PI;s.moveTo(x+r,y);s.lineTo(x+w-r,y);s.absarc(x+w-r,y+r,r,-P/2,0);s.lineTo(x+w,y+h-r);s.absarc(x+w-r,y+h-r,r,0,P/2);s.lineTo(x+r,y+h);s.absarc(x+r,y+h-r,r,P/2,P);s.lineTo(x,y+r);s.absarc(x+r,y+r,r,P,P*1.5);return s}
+function ext(w,h,r,d,m,hole,bev){const s=rr(w,h,r);if(hole)s.holes.push(rr(w-2*hole,h-2*hole,Math.max(r-hole,1)));
+ const g=new T.ExtrudeGeometry(s,{depth:d,bevelEnabled:!!bev,bevelSize:bev||0,bevelThickness:bev||0,bevelSegments:3,curveSegments:16});g.rotateX(-Math.PI/2);return new T.Mesh(g,m)}
+const carry=new T.Group(),dev=new T.Group();carry.add(dev);S.add(carry);
+const body=()=>new T.MeshPhysicalMaterial({color:0x5b7fae,roughness:.35,clearcoat:.7,clearcoatRoughness:.3}),tray=()=>M(0x3d4f6b,{roughness:.55});
+const led=new T.MeshStandardMaterial({color:0x22d3c5,emissive:0x22d3c5,emissiveIntensity:1}),pcb=()=>M(0x0e4f5c,{roughness:.6}),metal=c=>M(c,{metalness:.85,roughness:.3});
+const LY=[];
+function layer(name,desc,base,fn){const g=new T.Group();fn(g);g.position.y=base;dev.add(g);const mats=new Set();g.traverse(o=>{if(o.isMesh){o.castShadow=true;mats.add(o.material)}});LY.push({name,desc,g,base,mats})}
+layer('Base tray','Base tray with buzzer vents and a keyring lug.',0,g=>{
+ g.add(ext(54,54,13,1.6,tray(),0,.4));g.add(ext(54,54,13,9,tray(),2,.5));g.add(bx(14,4,8,tray(),0,4,-29));
+ const k=new T.Mesh(new T.TorusGeometry(8,1,10,32),metal(0xcdd3db));k.rotation.x=Math.PI/2;k.position.set(0,4,-36);g.add(k);
+ [-4,0,4].forEach(z=>{const h=cy(.9,.6,M(0x0a0d12),-27,4.6,z);h.rotation.z=Math.PI/2;g.add(h)})});
+layer('RFID reader','MFRC522 board with a 13.56 MHz coil, facing the belongings side. Talks to the ESP32 over SPI.',1.8,g=>{
+ g.add(ext(46,46,5,.8,M(0x1d3f68),0));[40,34,28,22].forEach(w=>{const c=ext(w,w,4,.25,metal(0xd8b04a),.7);c.position.y=.8;g.add(c)});
+ g.add(bx(7,.8,7,M(0x111418),15,1.2,15));g.add(bx(14,1,2.4,M(0x222831),-14,1.3,19))});
+layer('Li-Po battery','3.7 V 500 mAh pouch cell. Charged through the TP4056 board.',2.8,g=>{
+ const b=ext(34,30,2,4,M(0xe6b84f,{roughness:.6}),0,.3);b.position.z=3;g.add(b);g.add(bx(10,.4,3,metal(0xcfd6de),0,2,-14));g.add(bx(1.6,.8,8,M(0xc0392b),-4,2,-17));g.add(bx(1.6,.8,8,M(0x111),4,2,-17))});
+layer('Main board','ESP32-WROOM-32 controller, TP4056 charger, 3.3 V regulator, buzzer and status LED.',7,g=>{
+ g.add(ext(46,46,5,1.2,pcb(),0));const t=1.2;
+ g.add(bx(18,3.1,25.5,metal(0xc9d1da),-10,t+1.55,-3));g.add(bx(18,.3,6,M(0x2a2a2a),-10,t+.15,-18.9));
+ g.add(bx(14,1.6,17,M(0x2a63c8),13,t+.8,11));g.add(bx(3,2.6,8,metal(0xcdd3db),21.5,t+1.3,11));
+ g.add(bx(4,1.4,4,M(0x15191f),14,t+.7,-9));g.add(cy(4.5,3.2,M(0x1a1c20),14,t+1.6,-17));g.add(bx(2,.8,1.2,led,-20,t+.4,18));
+ [[-18,-20],[-3,19],[0,-20]].forEach(p=>g.add(bx(2,1,1.2,M(0xaeb4bd),p[0],t+.5,p[1])))});
+layer('GPS module','u-blox NEO-M8N with an 18 mm ceramic patch antenna. It sits on top so it sees the sky.',11.5,g=>{
+ g.add(ext(26,26,3,1,pcb(),0));g.add(bx(18,4,18,M(0xd9cfa0),0,3,0));g.add(bx(16,.2,16,metal(0xe8ecf0),0,5.1,0));g.add(bx(4,1,4,M(0x16191e),10,1.5,10))});
+layer('Sky-facing lid','Soft-touch lid with a status light pipe, a button and the USB-C opening.',9,g=>{
+ g.add(ext(54,54,13,8.4,body(),2,.5));const p=ext(54,54,13,2,body(),0,.6);p.position.y=8.4;g.add(p);
+ g.add(cy(1.4,.3,led,0,11.1,20));g.add(cy(8,.2,M(0x7a99c4),0,11.05,-3));g.add(cy(3,1,M(0xa9bdd8),19,11.3,17));
+ g.add(bx(1.4,3.4,9.5,M(0x090b0f),27,.8,11))});
+// belongings
+const items=[];
+function item(name,uid,x,z,ry,carried,build,tp){
+ const g=new T.Group();build(g);g.position.set(x,0,z);g.rotation.y=ry;(carried?carry:S).add(g);
+ const tm=new T.MeshStandardMaterial({color:0x12a594,emissive:0x12a594,emissiveIntensity:.1,roughness:.4}),tag=new T.Mesh(new T.CylinderGeometry(6,6,.5,32),tm);tag.position.set(...tp);g.add(tag);
+ const rm=new T.MeshBasicMaterial({color:0x12a594,transparent:true,opacity:0,depthWrite:false}),ring=new T.Mesh(new T.RingGeometry(7,8.4,48).rotateX(-Math.PI/2),rm);ring.position.set(tp[0],tp[1]+.4,tp[2]);g.add(ring);
+ const ln=new T.Line(new T.BufferGeometry(),new T.LineDashedMaterial({color:0x12a594,dashSize:5,gapSize:4}));ln.frustumCulled=false;S.add(ln);
+ g.traverse(o=>{if(o.isMesh)o.castShadow=true});items.push({name,uid,g,tag,tm,rm,ring,ln,state:'idle',pulse:0,carried})}
+item('ID card','04:A3:5F:12',-125,70,.3,true,g=>{g.add(ext(85.6,54,3.5,1,M(0xf5f7fa,{roughness:.6}),0));g.add(bx(85.6,.2,12,M(0x2b5da8),0,1.1,-21));g.add(bx(16,.2,20,M(0xb9c6d6),-26,1.1,4));g.add(bx(30,.2,2,M(0x9aa9bd),10,1.1,0));g.add(bx(24,.2,2,M(0x9aa9bd),10,1.1,6))},[30,1.3,16]);
+item('Keys','04:7B:C9:E1',-30,100,-.4,false,g=>{g.add(ext(22,44,9,5,M(0x24344d),0,0));const k=new T.Mesh(new T.TorusGeometry(7,1,10,32),metal(0xc7ced6));k.rotation.x=Math.PI/2;k.position.set(0,2.5,29);g.add(k);g.add(bx(9,1.6,28,metal(0xcaa45a),-5,1,52));g.add(cy(6,1.6,metal(0xcaa45a),-5,1,36));const b=bx(8,1.6,26,metal(0xb9c0c8),9,1,50);b.rotation.y=.2;g.add(b)},[0,5.3,-6]);
+item('Earphones','04:19:D2:8A',62,100,.2,true,g=>{g.add(ext(56,44,16,22,M(0x30343c),0,.8));g.add(ext(56.4,44.4,16,.5,M(0x12151a),0,0).translateY(11))},[0,23.2,0]);
+item('Charger','04:E2:41:B7',135,40,-.5,true,g=>{g.add(ext(30,34,4,16,M(0xf1f3f6,{roughness:.4}),0));g.add(bx(2.4,1,8,metal(0xb8c0c8),-6,8,-21));g.add(bx(2.4,1,8,metal(0xb8c0c8),6,8,-21))},[0,16.3,0]);
+const waves=[0,1].map(()=>{const m=new T.Mesh(new T.RingGeometry(1,1.25,64).rotateX(-Math.PI/2),new T.MeshBasicMaterial({color:0xe5533d,transparent:true,opacity:0,depthWrite:false}));m.position.y=1;carry.add(m);return m});
+// UI
+const plist=$('#plist'),ess=$('#ess'),logEl=$('#log'),toast=$('#toast');
+LY.slice().reverse().forEach(l=>{const i=LY.indexOf(l),b=document.createElement('button');b.innerHTML=`<b>${l.name}</b><span>${l.desc}</span>`;b.onclick=()=>{focus=focus===i?-1:i;[...plist.children].forEach((c,j)=>c.classList.toggle('on',LY.length-1-j===focus));expT=focus>=0?.85:+$('#ex').value;if(focus>=0)$('#ex').value=expT;vis()};plist.appendChild(b)});
+items.forEach(it=>{const li=document.createElement('li');li.innerHTML='<i class="dot"></i><b>'+it.name+'</b><small></small>';ess.appendChild(li);it.li=li;it.sm=li.querySelector('small')});
+function log(t,m){const li=document.createElement('li');li.innerHTML=`<em>${t}</em> ${m}`;logEl.prepend(li);while(logEl.children.length>7)logEl.lastChild.remove()}
+let exp=0,expT=0,focus=-1,mode='idle',wp=0,camD=340,guide=0,alertOn=false,ledS='idle',ac,fr=0;
+function vis(){const xr=$('#xr').checked;LY.forEach((l,i)=>{const op=focus>=0?(i===focus?1:.1):((i===0||i===5)&&xr?.2:1);l.mats.forEach(m=>{m.transparent=op<1;m.opacity=op;m.depthWrite=op>.5;m.needsUpdate=true})})}
+$('#ex').oninput=e=>{expT=+e.target.value};$('#xr').onchange=vis;
+function beep(){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();[0,.22,.44].forEach(d=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=2300;g.gain.value=.05;o.connect(g);g.connect(ac.destination);o.start(ac.currentTime+d);o.stop(ac.currentTime+d+.12)})}catch(e){}}
+function checkin(){if(mode!=='idle')return;items.forEach((it,i)=>setTimeout(()=>{if(mode!=='idle')return;it.state='ok';it.pulse=1;ledS='ok';setTimeout(()=>ledS='idle',600);log('inventory',`${it.name} read, UID ${it.uid}`)},i*450));setTimeout(()=>log('gps','fix · 9 satellites · HDOP 1.1'),1900)}
+function walk(){if(mode!=='idle')return;items.forEach(it=>{if(it.state==='idle'){it.state='ok';it.pulse=1}});mode='walk';wp=0;camD=720;log('schedule','Next: Physics Lab. Needs ID card, earphones, charger')}
+function reset(){carry.position.set(0,0,0);mode='idle';alertOn=false;items.forEach(i=>{i.state='idle';i.pulse=0});toast.hidden=true;camD=340;guide=170;wp=0;log('system','Tile reset, waiting for check-in')}
+$('#b1').onclick=checkin;$('#b2').onclick=walk;$('#b3').onclick=reset;$('#dis').onclick=()=>toast.hidden=true;
+function rs(){const w=app.clientWidth,h=app.clientHeight;R.setSize(w,h);C.aspect=w/h;C.updateProjectionMatrix()}new ResizeObserver(rs).observe(app);rs();vis();
+const v=new T.Vector3(),dw=new T.Vector3(),kp=new T.Vector3(),fp=new T.Vector3(),pre=new T.Vector3();
+function tick(t){requestAnimationFrame(tick);const s=t/1000;fr++;
+ exp+=(expT-exp)*.08;LY.forEach((l,i)=>l.g.position.y=l.base+i*exp*15);
+ if($('#sp').checked&&mode==='idle')dev.rotation.y+=.004;
+ if(mode==='walk'){wp=Math.min(1,wp+.0032);const e=wp*wp*(3-2*wp);carry.position.set(-90*e,0,-300*e);guide=150;if(wp>=1)mode='done'}
+ dev.getWorldPosition(dw);const keys=items[1];keys.tag.getWorldPosition(kp);
+ if(mode!=='idle'){const m=kp.distanceTo(dw)/22;if(m>10&&keys.state==='ok'){keys.state='miss';alertOn=true;$('#tmsg').textContent=`Last seen in Hostel Room 214, ${m.toFixed(0)} m behind you. Last read 10:42.`;toast.hidden=false;beep();log('alert',`Keys out of range, ${m.toFixed(0)} m`)}
+  if(fr%60===0)log('gps',`user ${m.toFixed(0)} m from keys`)}
+ const c=alertOn?(Math.sin(s*14)>0?0xe5533d:0x3a0c07):ledS==='ok'?0x2ee59d:0x22d3c5;led.color.setHex(c);led.emissive.setHex(c);
+ waves.forEach((w,k)=>{const p=(s*.9+k*.5)%1;w.visible=alertOn;w.scale.setScalar(1+p*30);w.material.opacity=.55*(1-p)});
+ items.forEach(it=>{it.tag.getWorldPosition(v);const col=it.state==='miss'?0xe5533d:it.state==='ok'?0x2ee59d:0x12a594;
+  it.tm.color.setHex(col);it.tm.emissive.setHex(col);it.tm.emissiveIntensity=it.state==='idle'?.1:.6;it.rm.color.setHex(col);
+  if(it.state==='miss'){const p=(s*1.1)%1;it.ring.scale.setScalar(1+p*3);it.rm.opacity=.8*(1-p)}
+  else if(it.pulse>0){it.pulse=Math.max(0,it.pulse-.02);it.ring.scale.setScalar(1+(1-it.pulse)*4);it.rm.opacity=it.pulse*.85}else it.rm.opacity=0;
+  it.ln.visible=it.state!=='idle';it.ln.material.color.setHex(col);if(it.ln.visible){it.ln.geometry.setFromPoints([dw.clone().setY(8),v]);it.ln.computeLineDistances()}
+  if(fr%6===0){const m=v.distanceTo(dw)/22;it.li.className=it.state;it.sm.textContent=it.state==='idle'?'Waiting for check-in':it.state==='miss'?`Left behind · ${m.toFixed(0)} m back`:it.carried?'In your bag':`On the desk · ${m.toFixed(1)} m`}});
+ if(guide>0){guide--;fp.copy(mode==='idle'?v.set(0,8,40):pre.copy(carry.position).add(kp).multiplyScalar(.5));pre.copy(O.target);O.target.lerp(fp,.05);C.position.add(v.copy(O.target).sub(pre));
+  v.copy(C.position).sub(O.target);v.multiplyScalar(1+(camD/v.length()-1)*.04);C.position.copy(O.target).add(v)}
+ O.update();R.render(S,C)}
+requestAnimationFrame(tick);
+</script></body></html>
